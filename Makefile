@@ -1,4 +1,4 @@
-obj-m += $(addsuffix .o, $(notdir $(basename $(wildcard $(BR2_EXTERNAL_KERNEL_MODULE_PATH)/*.c))))
+obj-m += dma_vga_driver.o
 ccflags-y := -DDEBUG -g -std=gnu99 -Wno-declaration-after-statement
 
 .PHONY: all clean
