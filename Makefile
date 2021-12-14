@@ -1,11 +1,9 @@
-obj-m += $(addsuffix .o, $(notdir $(basename $(wildcard $(BR2_EXTERNAL_KERNEL_MODULE_PATH)/*.c))))
-ccflags-y := -DDEBUG -g -std=gnu99 -Wno-declaration-after-statement
+obj-m:=dma_vga_driver.o
+KDIR := ../build/buildroot-output/build/linux-xilinx-v2018.2/
+all: default
 
-.PHONY: all clean
-
-all:
-	$(MAKE) -C '$(LINUX_DIR)' M='$(PWD)' modules
+default:
+	$(MAKE) CROSS_COMPILE=../../host/bin/arm-linux- ARCH=arm -C $(KDIR) SUBDIRS=$(shell pwd) modules
 
 clean:
-	$(MAKE) -C '$(LINUX_DIR)' M='$(PWD)' clean
-
+	rm -f *.[oas] .*.flags *.ko .*.cmd .*.d .*.tmp *.mod.c
