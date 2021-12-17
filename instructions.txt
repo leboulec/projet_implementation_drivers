@@ -1,0 +1,35 @@
+3e : appel user wait (ioctl)
+
+4e : On appel mmap
+
+5e : On revient à 3e
+
+USER
+------------------------------------------------------
+KERNEL
+
+1er etape : remapper registre et les IRQ -> ioremap/device_tree
+
+2e : allouer les buffers coherents (pas utiliser kmalloc - api dma mapping .h (dma_alloc_coherent) - indiquer a l'os que les adresses sont sur 32 bit (masque 0xFFFF))
+
+On passe dans le runtime
+
+3e : on attend l'interruption wait (wait_for_completion_interruptible() c'est un semaphore )
+	 Dans la routine interruption, on verifie le statut du DMA, on verifie bit completion à 1 puis complete(completion)
+	 Le buffer est donc libre on peut ecrire dedans
+	 Donc on fait en User space 4e 
+
+4e : remappfn_range()
+
+
+
+
+Implémenter appel system start
+
+En userspace:
+				start here
+					|
+					v
+-> wait -> mmap -> start ->
+^						  |
+|------------------------<-
