@@ -158,8 +158,8 @@ fail_alloc_chrdev:
 
 static void dma_vga_exit(void)
 {
-	dma_free_coherent(dev, TAILLE_BUF_X * TAILLE_BUF_Y, buf1, dma_handle1);
-	dma_free_coherent(dev, TAILLE_BUF_X * TAILLE_BUF_Y, buf2, dma_handle1);
+	dma_free_coherent(charDevice, TAILLE_BUF_X * TAILLE_BUF_Y, buf1, dma_handle1);
+	dma_free_coherent(charDevice, TAILLE_BUF_X * TAILLE_BUF_Y, buf2, dma_handle1);
 	device_destroy(charClass, dev);
 	class_destroy(charClass);
 	cdev_del(&cdevice);
