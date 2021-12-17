@@ -7,6 +7,7 @@
 #include <linux/uaccess.h>
 #include <linux/mm.h>
 #include <linux/slab.h>
+#include <linux/dma-mapping.h>
 
 
 #define DEVICE_NAME	"dma_vga"
@@ -14,13 +15,24 @@
 #define BASE_MINOR	0
 #define MINORS_REQUIRED 1
 
+/* ====== ADDRESSES ======*/
+// FFT
+#define AXI_DMA_0 0x40400000
+// VGA
+#define AXI_DMA_1 0x40410000
+
 /* ====== DMA BUFFERS ====== */
 #define TAILLE_BUF_X 640
 #define TAILLE_BUF_Y 480
 
 uint8_t *buf1;
 uint8_t *buf2;
+dma_addr_t dma_handle1;
+dma_addr_t dma_handle2;
 
+/* ====== IOCTL ====== */
+#define WAIT 0
+#define START 1
 
 /* ====== Device ====== */
 static struct class* charClass  = NULL;
@@ -90,6 +102,25 @@ static int dma_vga_init(void)
 	}
 
 	/* Allocate buffers */
+	if (dma_set_mask_and_coherent(dev, DMA_BIT_MASK(32))) {
+		dev_warn(dev, "mydev: No suitable DMA available\n");
+		goto ignore_this_device;
+	}
+
+	buf1 = dma_alloc_coherent(dev, TAILLE_BUF_X * TAILLE_BUF_Y, 
+					    &dma_handle1, GFP_DMA);
+	if (buf1 == NULL) {
+		pr_err("Failed to allocate buffer 1\n");
+		goto fail_buf1;
+	}
+
+	buf2 = dma_alloc_coherent(dev, TAILLE_BUF_X * TAILLE_BUF_Y, 
+					    &dma_handle2, GFP_DMA);
+	if (buf2 == NULL) {
+		pr_err("Failed to allocate buffer 2\n");
+		goto fail_buf2;
+	}
+	/*
 	buf1 = (uint8_t *)kmalloc_array(TAILLE_BUF_X * TAILLE_BUF_Y, 
 				       sizeof(uint8_t), GFP_KERNEL);
 	if (buf1 == NULL) {
@@ -103,14 +134,16 @@ static int dma_vga_init(void)
 		pr_err("Failed to allocate buf2 memory\n");
 		goto fail_buf2;
 	}
+	*/
 
 	/* Init vma */
 	pr_info("Loaded\n");
 
 	return 0;
 
+ignore_this_device:
 fail_buf2:
-	kfree(buf1);
+	dma_free_coherent(dev, TAILLE_BUF_X * TAILLE_BUF_Y, buf1, dma_handle1);
 fail_buf1:
 fail_create_device:
 	device_destroy(charClass, dev);
@@ -125,6 +158,8 @@ fail_alloc_chrdev:
 
 static void dma_vga_exit(void)
 {
+	dma_free_coherent(dev, TAILLE_BUF_X * TAILLE_BUF_Y, buf1, dma_handle1);
+	dma_free_coherent(dev, TAILLE_BUF_X * TAILLE_BUF_Y, buf2, dma_handle1);
 	device_destroy(charClass, dev);
 	class_destroy(charClass);
 	cdev_del(&cdevice);
