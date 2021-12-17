@@ -102,20 +102,20 @@ static int dma_vga_init(void)
 	}
 
 	/* Allocate buffers */
-	if (dma_set_mask_and_coherent(dev, DMA_BIT_MASK(32))) {
-		dev_warn(dev, "mydev: No suitable DMA available\n");
+	if (dma_set_mask_and_coherent(charDevice, DMA_BIT_MASK(32))) {
+		dev_warn(charDevice, "mydev: No suitable DMA available\n");
 		goto ignore_this_device;
 	}
 
-	buf1 = dma_alloc_coherent(dev, TAILLE_BUF_X * TAILLE_BUF_Y, 
-					    &dma_handle1, GFP_DMA);
+	buf1 = dma_alloc_coherent(charDevice, TAILLE_BUF_X * TAILLE_BUF_Y, 
+						   &dma_handle1, GFP_DMA);
 	if (buf1 == NULL) {
 		pr_err("Failed to allocate buffer 1\n");
 		goto fail_buf1;
 	}
 
-	buf2 = dma_alloc_coherent(dev, TAILLE_BUF_X * TAILLE_BUF_Y, 
-					    &dma_handle2, GFP_DMA);
+	buf2 = dma_alloc_coherent(charDevice, TAILLE_BUF_X * TAILLE_BUF_Y, 
+						   &dma_handle2, GFP_DMA);
 	if (buf2 == NULL) {
 		pr_err("Failed to allocate buffer 2\n");
 		goto fail_buf2;
@@ -143,7 +143,7 @@ static int dma_vga_init(void)
 
 ignore_this_device:
 fail_buf2:
-	dma_free_coherent(dev, TAILLE_BUF_X * TAILLE_BUF_Y, buf1, dma_handle1);
+	dma_free_coherent(charDevice, TAILLE_BUF_X * TAILLE_BUF_Y, buf1, dma_handle1);
 fail_buf1:
 fail_create_device:
 	device_destroy(charClass, dev);
